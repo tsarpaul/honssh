@@ -94,7 +94,6 @@ class SSH(baseProtocol.BaseProtocol):
             packet = self.packetLayout[message_num]
         except:
             packet = 'UNKNOWN_%s' % message_num
-        print(packet)
 
         if not self.server.post_auth_started:
             if parent == '[SERVER]':
@@ -121,9 +120,6 @@ class SSH(baseProtocol.BaseProtocol):
                 new_payload += struct.pack(">I", len(self.real_username))
                 new_payload += bytes(self.real_username)
                 new_payload += payload[len(self.username)+4:]
-                import binascii
-                print(binascii.hexlify(payload))
-                print(binascii.hexlify(new_payload))
                 payload = new_payload
             service = self.extract_string()
             self.auth_type = self.extract_string()
