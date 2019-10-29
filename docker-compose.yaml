@@ -1,10 +1,10 @@
 version: '3'
 services:
     honssh:
-        ports:
-            - 22:2222
         build: .
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
-        privileged: true
+            - /var/lib/docker:/var/lib/docker
+            - /honssh/logs:/honssh/logs
+        network_mode: "host"
 
