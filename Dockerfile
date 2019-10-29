@@ -1,9 +1,11 @@
 FROM ubuntu:18.04
 
 RUN apt update; \
-    apt install python-2.7 python-twisted python-mysqldb python-geoip python-watchdog docker; \
-    git 
-    pip install docker-py; \
+    apt install -y python python-pip python-twisted python-mysqldb python-geoip python-watchdog docker git
+RUN pip install docker-py
+RUN git clone https://github.com/tsarpaul/honssh /honssh && \
+    /honssh/update.sh
 
-ENTRYPOINT ./run.sh
+WORKDIR /honssh
+ENTRYPOINT ["/honssh/honsshctrl.sh", "start"]
 
