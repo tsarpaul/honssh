@@ -35,10 +35,22 @@ from honssh import log
 from honssh.config import Config
 
 
+# def get_connection_details_preauth(conn_details):
+#     cfg = Config.getInstance()
+#     if cfg.getboolean(['spoof', 'totalspoof_enabled']):
+#         username, password = get_first_user_credentials()
+#         return True, username, password
+#     return False, '', ''
+
 def get_connection_details(conn_details):
     cfg = Config.getInstance()
 
-    if cfg.getboolean(['spoof', 'enabled']):
+    if cfg.getboolean(['spoof', 'totalspoof_enabled']):
+        username, password = get_first_user_credentials()
+        write_spoof_log(conn_details)
+        return True, username, password
+
+    elif cfg.getboolean(['spoof', 'enabled']):
         # Get credentials for username
         credentials = get_credentials(conn_details['username'])
         password = None
@@ -101,6 +113,20 @@ def get_connection_details(conn_details):
     # No match!
     return False, '', ''
 
+
+def get_first_user_credentials():
+    cfg = Config.getInstance()
+    user_cfg_path = cfg.get(['spoof', 'users_conf'])
+
+    retval = {}
+    if os.path.exists(user_cfg_path):
+        users_cfg = ConfigParser.ConfigParser()
+        users_cfg.read(user_cfg_path)
+        users = users_cfg.sections()
+        return users[0], users_cfg.get(users[0], 'real_password')
+    else:
+        log.msg(log.LRED, '[SPOOF]', 'ERROR: users_conf does not exist')
+        exit(1)
 
 def get_credentials(username):
     cfg = Config.getInstance()

@@ -47,7 +47,12 @@ class Plugin(object):
         self.is_local_docker = True
 
     def get_pre_auth_details(self, conn_details):
-        return self.get_connection_details(conn_details)
+        # success, username, password = spoof.get_connection_details_preauth(conn_details)
+        # if success:
+        #     conn_details['username'] = username
+        #     conn_details['password'] = password
+        details = self.get_connection_details(conn_details)
+        return details
 
     def get_post_auth_details(self, conn_details):
         success, username, password = spoof.get_connection_details(conn_details)

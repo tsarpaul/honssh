@@ -69,7 +69,7 @@ class SSH(baseProtocol.BaseProtocol):
         super(SSH, self).__init__()
 
         self.channels = []
-        self.username = ''
+        self.real_username = 'root'
         self.password = ''
         self.auth_type = ''
 
@@ -94,6 +94,7 @@ class SSH(baseProtocol.BaseProtocol):
             packet = self.packetLayout[message_num]
         except:
             packet = 'UNKNOWN_%s' % message_num
+        print(packet)
 
         if not self.server.post_auth_started:
             if parent == '[SERVER]':
@@ -114,12 +115,23 @@ class SSH(baseProtocol.BaseProtocol):
         # - UserAuth
         if packet == 'SSH_MSG_USERAUTH_REQUEST':
             self.username = self.extract_string()
+            new_payload = b""
+            if self.username != self.real_username:
+                # TODO[PAUL]: Move real_username to an optional configuration
+                new_payload += struct.pack(">I", len(self.real_username))
+                new_payload += bytes(self.real_username)
+                new_payload += payload[len(self.username)+4:]
+                import binascii
+                print(binascii.hexlify(payload))
+                print(binascii.hexlify(new_payload))
+                payload = new_payload
             service = self.extract_string()
             self.auth_type = self.extract_string()
 
             if self.auth_type == 'password':
                 self.extract_bool()
                 self.password = self.extract_string()
+                self.password = 'root'
                 self.start_post_auth()
 
             elif self.auth_type == 'publickey':
@@ -136,14 +148,14 @@ class SSH(baseProtocol.BaseProtocol):
                     payload = self.string_to_hex('password') + chr(0)
 
             if not self.server.post_auth_started:
-                if self.username != '' and self.password != '':
-                    self.out.login_failed(self.username, self.password)
-                    self.server.login_failed(self.username, self.password)
+                if self.real_username != '' and self.password != '':
+                    self.out.login_failed(self.real_username, self.password)
+                    self.server.login_failed(self.real_username, self.password)
 
         elif packet == 'SSH_MSG_USERAUTH_SUCCESS':
-            if len(self.username) > 0 and len(self.password) > 0:
-                self.out.login_successful(self.username, self.password, self.server.spoofed)
-                self.server.login_successful(self.username, self.password)
+            if len(self.real_username) > 0 and len(self.password) > 0:
+                self.out.login_successful(self.real_username, self.password, self.server.spoofed)
+                self.server.login_successful(self.real_username, self.password)
 
         elif packet == 'SSH_MSG_USERAUTH_INFO_REQUEST':
             self.auth_type = 'keyboard-interactive'
@@ -376,7 +388,7 @@ class SSH(baseProtocol.BaseProtocol):
     def start_post_auth(self):
         if self.password != "":
             if not self.server.post_auth_started:
-                self.server.start_post_auth(self.username, self.password, self.auth_type)
+                self.server.start_post_auth(self.real_username, self.password, self.auth_type)
                 self.sendOn = False
 
     def inject_key(self, server_id, message):
