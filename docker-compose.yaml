@@ -5,6 +5,6 @@ services:
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
             - /var/lib/docker:/var/lib/docker
-            - /honssh/logs:/honssh/logs
+            - /data/honssh/logs:/honssh/logs
         network_mode: "host"
 
