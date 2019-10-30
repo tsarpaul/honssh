@@ -18,8 +18,8 @@ RUN apt update; \
 
 RUN pip install docker-py
 ADD ./ /honssh
-RUN rm -f honssh.pid && cd /honssh && ./update.sh
+RUN cd /honssh && rm -f honssh.pid && ./update.sh
 
 WORKDIR /honssh
-ENTRYPOINT ["./honsshctrl.sh", "start"]
+ENTRYPOINT ["./run.sh"]
 
