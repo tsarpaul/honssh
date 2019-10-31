@@ -88,12 +88,12 @@ class DockerDriver(object):
                                                              cpu_period=self.cpu_period, cpu_shares=self.cpu_shares,
                                                              cpuset_cpus=self.cpuset_cpus)
             self.container_id = \
-                self.connection.create_container(image=self.image, tty=True, hostname=self.hostname,
+                self.connection.create_container(image=self.image, hostname=self.hostname,
                                                  name=self.peer_ip, host_config=host_config)['Id']
             self.connection.start(self.container_id)
 
         exec_id = self.connection.exec_create(self.container_id, self.launch_cmd)['Id']
-        self.connection.exec_start(exec_id, tty=True)
+        self.connection.exec_start(exec_id)
         container_data = self.connection.inspect_container(self.container_id)
         self.container_ip = container_data['NetworkSettings']['Networks']['bridge']['IPAddress']
 
