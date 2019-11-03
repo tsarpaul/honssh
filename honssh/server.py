@@ -80,6 +80,8 @@ class HonsshServerTransport(honsshServer.HonsshServer):
         self.pre_auth = pre_auth_handler.PreAuth(self)
         self.post_auth = post_auth_handler.PostAuth(self)
 
+        self.wasConnected = True
+
         # Get auth plugins
         plugin_list = plugins.get_plugin_list(plugin_type='honeypot')
         pre_auth_plugin = plugins.import_auth_plugin(self.pre_auth.name, plugin_list)
@@ -112,9 +114,10 @@ class HonsshServerTransport(honsshServer.HonsshServer):
             self.client.loseConnection()
         except:
             pass
+        # log.msg(log.LPURPLE, '[SERVER]', 'HONSSHSERVER CONNECTION LOST!!')
         honsshServer.HonsshServer.connectionLost(self, reason)
-
         if self.wasConnected:
+            # log.msg(log.LPURPLE, '[SERVER]', 'WAS CONNECTED TRUE!!')
             self.out.connection_lost()
 
     def ssh_KEXINIT(self, packet):
@@ -148,7 +151,6 @@ class HonsshServerTransport(honsshServer.HonsshServer):
         self.honey_port = honey_port
 
     def connection_setup(self):
-        self.wasConnected = True
         self.out.connection_made(self.peer_ip, self.peer_port, self.honey_ip, self.honey_port, self.sensor_name)
         self.out.set_version(self.otherVersionString)
 
