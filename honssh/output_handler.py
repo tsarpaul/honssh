@@ -50,7 +50,7 @@ class Output(object):
         self.cfg = Config.getInstance()
         self.connections = factory.connections
         self.plugin_servers = factory.plugin_servers
-        self.loaded_plugins = None
+        self.loaded_plugins = []
         self.sensor_name = None
         self.honey_ip = None
         self.honey_port = None

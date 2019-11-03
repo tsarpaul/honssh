@@ -57,6 +57,8 @@ class PreAuth(base_auth_handler.BaseAuth):
                 self.honey_ip = returned_conn_details['honey_ip']
                 self.honey_port = returned_conn_details['honey_port']
                 self.connection_timeout = returned_conn_details['connection_timeout']
+                # TODO PAUL: Remove this abomination:
+                self.server.out.connection_made(self.server.peer_ip, self.server.peer_port, self.honey_ip, self.honey_port, self.sensor_name)
 
                 if not self.server.disconnected:
                     log.msg(log.LGREEN, '[PRE_AUTH]',
