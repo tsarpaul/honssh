@@ -25,7 +25,7 @@
 # OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
 # SUCH DAMAGE.
-
+from time import sleep
 from twisted.internet import reactor
 from twisted.internet import threads
 
@@ -57,7 +57,8 @@ class PreAuth(base_auth_handler.BaseAuth):
                 self.honey_ip = returned_conn_details['honey_ip']
                 self.honey_port = returned_conn_details['honey_port']
                 self.connection_timeout = returned_conn_details['connection_timeout']
-                # TODO PAUL: Remove this abomination:
+                # TODO PAUL: We add this because this function registers plugin callbacks (ex. lost_connection)
+                # which are required for docker cleanup. Ideally this would be compartmentalized.
                 self.server.out.connection_made(self.server.peer_ip, self.server.peer_port, self.honey_ip, self.honey_port, self.sensor_name)
 
                 if not self.server.disconnected:
@@ -67,6 +68,7 @@ class PreAuth(base_auth_handler.BaseAuth):
                     client_factory.server = self.server
                     bind_ip = self.server.net.setup_networking(self.server.peer_ip, self.honey_ip, self.honey_port)
                     self.networkingSetup = True
+                    sleep(2)
                     reactor.connectTCP(self.honey_ip, self.honey_port, client_factory,
                                        bindAddress=(bind_ip, self.server.peer_port + 2),
                                        timeout=self.connection_timeout)

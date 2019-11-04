@@ -117,8 +117,10 @@ class HonsshServerTransport(honsshServer.HonsshServer):
         # log.msg(log.LPURPLE, '[SERVER]', 'HONSSHSERVER CONNECTION LOST!!')
         honsshServer.HonsshServer.connectionLost(self, reason)
         if self.wasConnected:
-            # log.msg(log.LPURPLE, '[SERVER]', 'WAS CONNECTED TRUE!!')
+            log.msg(log.LPURPLE, '[SERVER]', 'WAS CONNECTED TRUE!!')
             self.out.connection_lost()
+        else:
+            log.msg(log.LPURPLE, '[SERVER]', 'WAS CONNECTED FALSE!!')
 
     def ssh_KEXINIT(self, packet):
         return honsshServer.HonsshServer.ssh_KEXINIT(self, packet)
