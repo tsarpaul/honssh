@@ -59,6 +59,7 @@ class DockerDriver(object):
         self.reuse_container = reuse_container
 
         self.watcher = None
+        self.syncing = False
         self.overlay_folder = None
         self.mount_dir = None
         self.max_filesize = 0
@@ -108,7 +109,8 @@ class DockerDriver(object):
         if self.watcher is not None:
             self.watcher.unschedule_all()
             log.msg(log.LCYAN, '[PLUGIN][DOCKER]', 'Filesystem watcher stopped')
-        sync(self.mount_dir, self.overlay_folder, action='sync')
+        if self.syncing:
+            sync(self.mount_dir, self.overlay_folder, action='sync')
 
         self.connection.stop(self.container_id)
         log.msg(log.LCYAN, '[PLUGIN][DOCKER]',
@@ -166,6 +168,7 @@ class DockerDriver(object):
                 #                                              self.max_filesize, self.use_revisions)
                 # self.watcher.schedule(event_handler, self.mount_dir, recursive=True)
                 # self.watcher.start()
+                self.syncing = True
                 sync(self.mount_dir, self.overlay_folder, action='sync')
 
                 log.msg(log.LGREEN, '[PLUGIN][DOCKER]', 'Filesystem watcher started')
