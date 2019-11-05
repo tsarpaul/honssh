@@ -55,7 +55,7 @@ class BaseAuth(object):
             return {'success': False}
         else:
             return plugins.run_plugins_function([self.auth_plugin], 'get_' + self.name.lower() + '_details', False,
-                                                self.conn_details)
+                                                self.conn_details, self.server)  # NOTE PAUL: Added server to detect if we're disconnected
 
     def is_pot_connected(self):
         timeout_count = 0

@@ -110,6 +110,7 @@ class HonsshServerTransport(honsshServer.HonsshServer):
         honsshServer.HonsshServer.connectionMade(self)
 
     def connectionLost(self, reason):
+        self.disconnected = True  # Added to signal docker pre_auth to teardown container (fixed race condition)
         try:
             self.client.loseConnection()
         except:

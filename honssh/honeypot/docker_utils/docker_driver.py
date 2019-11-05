@@ -103,6 +103,7 @@ class DockerDriver(object):
         return {"id": self.container_id, "ip": self.container_ip}
 
     def teardown_container(self, destroy_container):
+        print("DESTROYING CONTAINER WITH ID: " + str(self.container_id))
         if self.watcher is not None:
             self.watcher.unschedule_all()
             log.msg(log.LCYAN, '[PLUGIN][DOCKER]', 'Filesystem watcher stopped')

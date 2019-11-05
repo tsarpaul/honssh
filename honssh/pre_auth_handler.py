@@ -68,7 +68,7 @@ class PreAuth(base_auth_handler.BaseAuth):
                     client_factory.server = self.server
                     bind_ip = self.server.net.setup_networking(self.server.peer_ip, self.honey_ip, self.honey_port)
                     self.networkingSetup = True
-                    sleep(2)
+                    sleep(1)
                     reactor.connectTCP(self.honey_ip, self.honey_port, client_factory,
                                        bindAddress=(bind_ip, self.server.peer_port + 2),
                                        timeout=self.connection_timeout)
