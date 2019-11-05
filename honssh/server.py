@@ -67,6 +67,10 @@ class HonsshServerTransport(honsshServer.HonsshServer):
         self.honey_port = 0
 
     def connectionMade(self):
+        if self.wasConnected:
+            print("FAIL")
+            return
+
         self.out = output_handler.Output(self.factory)
         self.net = networking.Networking()
 
