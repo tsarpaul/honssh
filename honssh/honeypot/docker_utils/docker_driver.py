@@ -33,7 +33,7 @@ import os
 from honssh import log
 from docker import Client
 from dirsync import sync
-# from watchdog.observers import Observer
+from watchdog.observers import Observer
 from .docker_filesystem import DockerFileSystemEventHandler
 
 
@@ -108,6 +108,7 @@ class DockerDriver(object):
         if self.watcher is not None:
             self.watcher.unschedule_all()
             log.msg(log.LCYAN, '[PLUGIN][DOCKER]', 'Filesystem watcher stopped')
+        sync(self.mount_dir, self.overlay_folder, action='sync')
 
         self.connection.stop(self.container_id)
         log.msg(log.LCYAN, '[PLUGIN][DOCKER]',
