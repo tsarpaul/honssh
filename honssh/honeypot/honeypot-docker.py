@@ -53,6 +53,7 @@ class Plugin(object):
         #     conn_details['password'] = password
         details = self.get_connection_details(conn_details)
         if server.disconnected:
+            print("SERVER DISCONNECTED!!!")
             self.connection_lost(conn_details)
         return details
 

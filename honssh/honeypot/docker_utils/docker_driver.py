@@ -145,8 +145,8 @@ class DockerDriver(object):
         supported_storage = {
             'aufs': '%s/%s/mnt/%s',  # -> /var/lib/docker/aufs/mnt/<mount-id>
             'btrfs': '%s/%s/subvolumes/%s',  # -> /var/lib/docker/btrfs/subvolumes/<mount-id>
-            'overlay': '%s/%s/%s/merged',  # -> /var/lib/docker/overlay/<mount-id>/merged
-            'overlay2': '%s/%s/%s/merged'  # -> /var/lib/docker/overlay2/<mount-id>/merged
+            'overlay': '%s/%s/%s/diff',  # -> /var/lib/docker/overlay/<mount-id>/diff
+            'overlay2': '%s/%s/%s/diff'  # -> /var/lib/docker/overlay2/<mount-id>/diff
         }
 
         if storage_driver in supported_storage:
