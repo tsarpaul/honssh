@@ -32,7 +32,8 @@ import os
 
 from honssh import log
 from docker import Client
-from watchdog.observers import Observer
+from dirsync import sync
+# from watchdog.observers import Observer
 from .docker_filesystem import DockerFileSystemEventHandler
 
 
@@ -159,11 +160,12 @@ class DockerDriver(object):
 
             try:
                 # Create watcher and start watching
-                self.watcher = Observer()
-                event_handler = DockerFileSystemEventHandler(self.overlay_folder, self.mount_dir,
-                                                             self.max_filesize, self.use_revisions)
-                self.watcher.schedule(event_handler, self.mount_dir, recursive=True)
-                self.watcher.start()
+                # self.watcher = Observer()
+                # event_handler = DockerFileSystemEventHandler(self.overlay_folder, self.mount_dir,
+                #                                              self.max_filesize, self.use_revisions)
+                # self.watcher.schedule(event_handler, self.mount_dir, recursive=True)
+                # self.watcher.start()
+                sync(self.mount_dir, self.overlay_folder, action='sync')
 
                 log.msg(log.LGREEN, '[PLUGIN][DOCKER]', 'Filesystem watcher started')
             except Exception as exc:

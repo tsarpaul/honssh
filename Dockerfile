@@ -16,7 +16,7 @@ RUN apt update; \
     apt-get update && \
     apt-get install docker-ce-cli
 
-RUN pip install docker-py
+RUN pip install docker-py dirsync
 ADD ./ /honssh
 RUN cd /honssh && rm -f honssh.pid && ./update.sh
 
