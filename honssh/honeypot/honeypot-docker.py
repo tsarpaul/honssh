@@ -56,7 +56,7 @@ class Plugin(object):
             self.connection_lost(conn_details)
         return details
 
-    def get_post_auth_details(self, conn_details):
+    def get_post_auth_details(self, conn_details, server):
         success, username, password = spoof.get_connection_details(conn_details)
         if success:
             if self.container is None:
