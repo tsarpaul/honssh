@@ -80,6 +80,8 @@ class DockerDriver(object):
             containers_alive = self.connection.containers()
             old_container_alive = old_container_id in [c['Id'] for c in containers_alive]
             if old_container_alive:
+                if not self.container_ip:
+                    raise Exception("Container is up but was not assigned an IP address, must be killed first!")
                 return {"id": old_container_id, "ip": self.container_ip}
         except Exception:
             old_container_id = None
@@ -174,7 +176,7 @@ class DockerDriver(object):
                 # self.watcher.schedule(event_handler, self.mount_dir, recursive=True)
                 # self.watcher.start()
                 self.syncing = True
-                sync(self.mount_dir, self.overlay_folder, action='sync')
+                sync(self.mount_dir, self.overlay_folder, action='sync', create=True, force=True)
 
                 log.msg(log.LGREEN, '[PLUGIN][DOCKER]', 'Filesystem watcher started')
             except Exception as exc:
