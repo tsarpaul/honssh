@@ -77,7 +77,7 @@ class DockerDriver(object):
             old_container_id = container_data['Id']
 
             # Check for existing container
-            containers_alive = self.connection.containers
+            containers_alive = self.connection.containers()
             old_container_alive = old_container_id in [c['Id'] for c in containers_alive]
             if old_container_alive:
                 return {"id": old_container_id, "ip": self.container_ip}
