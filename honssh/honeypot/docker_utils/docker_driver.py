@@ -71,23 +71,22 @@ class DockerDriver(object):
         self.connection = Client(self.uri)
 
     def launch_container(self):
-        # Get container id
-        container_data = self.connection.inspect_container(self.peer_ip)
-        self.container_id = container_data['Id']
+        try:
+            # Get container id
+            container_data = self.connection.inspect_container(self.peer_ip)
+            self.container_id = container_data['Id']
 
-        # Check for existing container
-        containers_alive = self.connection.containers
-        container_alive = self.container_id in [c['Id'] for c in containers_alive]
-        if container_alive:
-            return {"id": self.container_id, "ip": self.container_ip}
+            # Check for existing container
+            containers_alive = self.connection.containers
+            container_alive = self.container_id in [c['Id'] for c in containers_alive]
+            if container_alive:
+                return {"id": self.container_id, "ip": self.container_ip}
+        except Exception:
+            self.container_id = None
 
-        if self.reuse_container:
-            try:
-                log.msg(log.LGREEN, '[PLUGIN][DOCKER]', 'Reusing container %s ' % self.container_id)
-                self.connection.restart(self.container_id)
-            except:
-                self.container_id = None
-                pass
+        if self.reuse_container and self.container_id:
+            log.msg(log.LGREEN, '[PLUGIN][DOCKER]', 'Reusing container %s ' % self.container_id)
+            self.connection.restart(self.container_id)
 
         if self.container_id is None:
             host_config = self.connection.create_host_config(pids_limit=self.pids_limit, mem_limit=self.mem_limit,
