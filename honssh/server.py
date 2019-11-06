@@ -67,6 +67,10 @@ class HonsshServerTransport(honsshServer.HonsshServer):
         self.honey_port = 0
 
     def connectionMade(self):
+        if self.wasConnected:
+            print("FAIL")
+            return
+
         self.out = output_handler.Output(self.factory)
         self.net = networking.Networking()
 
@@ -79,6 +83,8 @@ class HonsshServerTransport(honsshServer.HonsshServer):
 
         self.pre_auth = pre_auth_handler.PreAuth(self)
         self.post_auth = post_auth_handler.PostAuth(self)
+
+        self.wasConnected = True
 
         # Get auth plugins
         plugin_list = plugins.get_plugin_list(plugin_type='honeypot')
@@ -108,14 +114,18 @@ class HonsshServerTransport(honsshServer.HonsshServer):
         honsshServer.HonsshServer.connectionMade(self)
 
     def connectionLost(self, reason):
+        self.disconnected = True  # Added to signal docker pre_auth to teardown container (fixed race condition)
         try:
             self.client.loseConnection()
         except:
             pass
+        # log.msg(log.LPURPLE, '[SERVER]', 'HONSSHSERVER CONNECTION LOST!!')
         honsshServer.HonsshServer.connectionLost(self, reason)
-
         if self.wasConnected:
+            log.msg(log.LPURPLE, '[SERVER]', 'WAS CONNECTED TRUE!!')
             self.out.connection_lost()
+        else:
+            log.msg(log.LPURPLE, '[SERVER]', 'WAS CONNECTED FALSE!!')
 
     def ssh_KEXINIT(self, packet):
         return honsshServer.HonsshServer.ssh_KEXINIT(self, packet)
@@ -148,7 +158,6 @@ class HonsshServerTransport(honsshServer.HonsshServer):
         self.honey_port = honey_port
 
     def connection_setup(self):
-        self.wasConnected = True
         self.out.connection_made(self.peer_ip, self.peer_port, self.honey_ip, self.honey_port, self.sensor_name)
         self.out.set_version(self.otherVersionString)
 

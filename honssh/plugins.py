@@ -106,7 +106,6 @@ def run_plugins_function(plugins, function, thread, *args, **kwargs):
             if function != 'packet_logged':
                 pass
                 #log.msg(log.LCYAN, '[PLUGIN][' + class_name + ']', function.upper())
-
             if thread:
                 threads.deferToThread(func, *copy.deepcopy(args), **copy.deepcopy(kwargs))
             else:

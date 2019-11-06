@@ -50,7 +50,7 @@ class Output(object):
         self.cfg = Config.getInstance()
         self.connections = factory.connections
         self.plugin_servers = factory.plugin_servers
-        self.loaded_plugins = None
+        self.loaded_plugins = []
         self.sensor_name = None
         self.honey_ip = None
         self.honey_port = None
@@ -61,6 +61,7 @@ class Output(object):
         self.downloadFolder = None
 
     def connection_made(self, end_ip, end_port, honey_ip, honey_port, sensor_name):
+        log.msg(log.CYAN, '[OUTPUT]', 'Established Connection with the attacker: %s' % end_ip)
         plugin_list = plugins.get_plugin_list(plugin_type='output')
         self.loaded_plugins = plugins.import_plugins(plugin_list)
 

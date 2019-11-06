@@ -32,6 +32,7 @@ import os
 
 from honssh import log
 from docker import Client
+from dirsync import sync
 from watchdog.observers import Observer
 from .docker_filesystem import DockerFileSystemEventHandler
 
@@ -58,6 +59,7 @@ class DockerDriver(object):
         self.reuse_container = reuse_container
 
         self.watcher = None
+        self.syncing = False
         self.overlay_folder = None
         self.mount_dir = None
         self.max_filesize = 0
@@ -69,18 +71,23 @@ class DockerDriver(object):
         self.connection = Client(self.uri)
 
     def launch_container(self):
-        if self.reuse_container:
-            try:
-                # Check for existing container
-                container_data = self.connection.inspect_container(self.peer_ip)
-                # Get container id
-                self.container_id = container_data['Id']
-                log.msg(log.LGREEN, '[PLUGIN][DOCKER]', 'Reusing container %s ' % self.container_id)
-                # Restart container
-                self.connection.restart(self.container_id)
-            except:
-                self.container_id = None
-                pass
+        try:
+            # Get container id
+            container_data = self.connection.inspect_container(self.peer_ip)
+            old_container_id = container_data['Id']
+
+            # Check for existing container
+            containers_alive = self.connection.containers()
+            old_container_alive = old_container_id in [c['Id'] for c in containers_alive]
+            if old_container_alive:
+                return {"id": old_container_id, "ip": self.container_ip}
+        except Exception:
+            old_container_id = None
+
+        if self.reuse_container and old_container_id:
+            self.container_id = old_container_id
+            log.msg(log.LGREEN, '[PLUGIN][DOCKER]', 'Reusing container %s ' % self.container_id)
+            self.connection.restart(self.container_id)
 
         if self.container_id is None:
             host_config = self.connection.create_host_config(pids_limit=self.pids_limit, mem_limit=self.mem_limit,
@@ -103,9 +110,12 @@ class DockerDriver(object):
         return {"id": self.container_id, "ip": self.container_ip}
 
     def teardown_container(self, destroy_container):
+        print("DESTROYING CONTAINER WITH ID: " + str(self.container_id))
         if self.watcher is not None:
             self.watcher.unschedule_all()
             log.msg(log.LCYAN, '[PLUGIN][DOCKER]', 'Filesystem watcher stopped')
+        if self.syncing:
+            sync(self.mount_dir, self.overlay_folder, action='sync')
 
         self.connection.stop(self.container_id)
         log.msg(log.LCYAN, '[PLUGIN][DOCKER]',
@@ -144,8 +154,8 @@ class DockerDriver(object):
         supported_storage = {
             'aufs': '%s/%s/mnt/%s',  # -> /var/lib/docker/aufs/mnt/<mount-id>
             'btrfs': '%s/%s/subvolumes/%s',  # -> /var/lib/docker/btrfs/subvolumes/<mount-id>
-            'overlay': '%s/%s/%s/merged',  # -> /var/lib/docker/overlay/<mount-id>/merged
-            'overlay2': '%s/%s/%s/merged'  # -> /var/lib/docker/overlay2/<mount-id>/merged
+            'overlay': '%s/%s/%s/diff',  # -> /var/lib/docker/overlay/<mount-id>/diff
+            'overlay2': '%s/%s/%s/diff'  # -> /var/lib/docker/overlay2/<mount-id>/diff
         }
 
         if storage_driver in supported_storage:
@@ -158,11 +168,13 @@ class DockerDriver(object):
 
             try:
                 # Create watcher and start watching
-                self.watcher = Observer()
-                event_handler = DockerFileSystemEventHandler(self.overlay_folder, self.mount_dir,
-                                                             self.max_filesize, self.use_revisions)
-                self.watcher.schedule(event_handler, self.mount_dir, recursive=True)
-                self.watcher.start()
+                # self.watcher = Observer()
+                # event_handler = DockerFileSystemEventHandler(self.overlay_folder, self.mount_dir,
+                #                                              self.max_filesize, self.use_revisions)
+                # self.watcher.schedule(event_handler, self.mount_dir, recursive=True)
+                # self.watcher.start()
+                self.syncing = True
+                sync(self.mount_dir, self.overlay_folder, action='sync')
 
                 log.msg(log.LGREEN, '[PLUGIN][DOCKER]', 'Filesystem watcher started')
             except Exception as exc:
