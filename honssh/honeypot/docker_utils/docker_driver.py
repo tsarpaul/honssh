@@ -76,12 +76,12 @@ class DockerDriver(object):
             container_data = self.connection.inspect_container(self.peer_ip)
             old_container_id = container_data['Id']
 
-            # Check for existing container
+            # Check for existing, active container
             containers_alive = self.connection.containers()
             old_container_alive = old_container_id in [c['Id'] for c in containers_alive]
             if old_container_alive:
-                if not self.container_ip:
-                    raise Exception("Container is up but was not assigned an IP address, must be killed first!")
+                self.container_ip = old_container_alive['NetworkSettings']['Networks']['bridge']['IPAddress']
+                self.container_ip = old_container_id
                 return {"id": old_container_id, "ip": self.container_ip}
         except Exception:
             old_container_id = None
