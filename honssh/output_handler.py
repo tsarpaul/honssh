@@ -106,6 +106,10 @@ class Output(object):
         plugins.run_plugins_function(self.loaded_plugins, 'connection_lost', True, session)
         self.connections.del_session(self.session_id)
 
+    def port_forwarding_requested(self, conn_details):
+        sensor, session = self.connections.get_session(self.session_id)
+        plugins.run_plugins_function(self.loaded_plugins, 'port_forwarding_requested', True, sensor, conn_details)
+
     def set_version(self, version):
         session = self.connections.set_client(self.session_id, version)
         plugins.run_plugins_function(self.loaded_plugins, 'set_client', True, session)

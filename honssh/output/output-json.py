@@ -2,11 +2,10 @@
 
 import json
 import time
+import os
 
 from honssh.config import Config
 from honssh.utils import validation
-
-import os
 
 
 class Plugin(object):
@@ -45,6 +44,9 @@ class Plugin(object):
             outcome = 'blocked'
         self.log_event(sensor, 'command.' + outcome)
 
+    def port_forwarding_requested(self, sensor, conn_details):
+        self.log_event(sensor, 'honssh.ssh.port_forwarding_requested', {'port_forwarding': conn_details})
+
     def download_finished(self, sensor):
         self.log_event(sensor, 'honssh.download.finished')
 
@@ -55,7 +57,9 @@ class Plugin(object):
                 return False
         return True
 
-    def log_event(self, sensor, event):
+    def log_event(self, sensor, event, extra=None):
+        if extra:
+            sensor.update(extra)
         message = sensor
         message['shasum'] = message['session']['session_id']
         message['eventid'] = event
@@ -69,7 +73,7 @@ class Plugin(object):
             set_permissions = True
 
         f = file(the_file, 'a')
-        f.write(json.dumps(string)+'\n')
+        f.write(json.dumps(string) + '\n')
         f.close()
 
         if set_permissions:

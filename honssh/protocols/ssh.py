@@ -197,6 +197,13 @@ class SSH(baseProtocol.BaseProtocol):
                     channel['name'] = the_name
                     self.out.channel_opened(the_uuid, channel['name'])
             elif channel_type == 'direct-tcpip' or channel_type == 'forwarded-tcpip':
+                self.extract_int(4)
+                self.extract_int(4)
+
+                conn_details = {'dstIP': self.extract_string(), 'dstPort': self.extract_int(4),
+                                'srcIP': self.out.end_ip, 'srcPort': self.extract_int(4)}
+                self.out.port_forwarding_requested(conn_details)
+
                 if self.cfg.getboolean(['hp-restrict', 'disable_port_forwarding']):
                     log.msg(log.LPURPLE, '[SSH]', 'Detected Port Forwarding Channel - Disabling!')
                     self.sendOn = False
