@@ -78,9 +78,10 @@ class DockerDriver(object):
 
             # Check for existing, active container
             containers_alive = self.connection.containers()
-            old_container_alive = old_container_id in [c['Id'] for c in containers_alive]
-            if old_container_alive:
-                self.container_ip = old_container_alive['NetworkSettings']['Networks']['bridge']['IPAddress']
+            old_container = [c['Id'] for c in containers_alive if c['Id'] == old_container_id]
+            if old_container:
+                old_container = old_container[0]
+                self.container_ip = old_container['NetworkSettings']['Networks']['bridge']['IPAddress']
                 self.container_ip = old_container_id
                 return {"id": old_container_id, "ip": self.container_ip}
         except Exception:
