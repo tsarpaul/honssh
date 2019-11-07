@@ -82,8 +82,9 @@ class DockerDriver(object):
             if old_container:
                 old_container = old_container[0]
                 self.container_ip = old_container['NetworkSettings']['Networks']['bridge']['IPAddress']
-                self.container_ip = old_container_id
-                return {"id": old_container_id, "ip": self.container_ip}
+                self.container_id = old_container_id
+                log.msg(log.LGREEN, '[PLUGIN][DOCKER]', 'Reusing ACTIVE container %s ' % old_container_id)
+                return {"id": self.container_id, "ip": self.container_ip}
         except Exception:
             old_container_id = None
 
