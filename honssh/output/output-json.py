@@ -44,8 +44,10 @@ class Plugin(object):
             outcome = 'blocked'
         self.log_event(sensor, 'command.' + outcome)
 
-    def port_forwarding_requested(self, sensor, conn_details):
-        self.log_event(sensor, 'honssh.ssh.port_forwarding_requested', {'port_forwarding': conn_details})
+    def port_forwarding_requested(self, conn_details):
+        # TODO: Fix session creation so we can log events such as this, which can happen before/without SSH connection setup
+        sensor = {'session': {'peer_ip': conn_details['srcIP'], 'peer_port': conn_details['srcPort']}}
+        self.log_event(sensor, 'honssh.ssh.port_forwarding_requested', {'dstIP': conn_details['dstIP'], 'dstPort': conn_details['dstPort']})
 
     def download_finished(self, sensor):
         self.log_event(sensor, 'honssh.download.finished')
@@ -61,7 +63,8 @@ class Plugin(object):
         if extra:
             sensor.update(extra)
         message = sensor
-        message['shasum'] = message['session']['session_id']
+        if 'session_id' in message['session']:
+            message['shasum'] = message['session']['session_id']
         message['eventid'] = event
         message['timestamp'] = time.time()
         self.log_to_file(self.log_file, message)
