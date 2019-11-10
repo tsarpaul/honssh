@@ -70,30 +70,35 @@ class DockerDriver(object):
     def make_connection(self):
         self.connection = Client(self.uri)
 
+    def try_reuse_alive_container(self, old_container_id):
+        # Check for existing, active container
+        containers_alive = self.connection.containers()
+        old_container = [c for c in containers_alive if c['Id'] == old_container_id]
+        if old_container:
+            old_container = old_container[0]
+            container_id = old_container_id
+            container_ip = old_container['NetworkSettings']['Networks']['bridge']['IPAddress']
+            log.msg(log.LGREEN, '[PLUGIN][DOCKER]', 'Reusing ACTIVE container %s ' % old_container_id)
+            return container_id, container_ip
+
     def launch_container(self):
+        old_container_id = None
         try:
             # Get container id
             container_data = self.connection.inspect_container(self.peer_ip)
             old_container_id = container_data['Id']
 
-            # Check for existing, active container
-            containers_alive = self.connection.containers()
-            old_container = [c for c in containers_alive if c['Id'] == old_container_id]
-            if old_container:
-                old_container = old_container[0]
-                self.container_ip = old_container['NetworkSettings']['Networks']['bridge']['IPAddress']
-                self.container_id = old_container_id
-                log.msg(log.LGREEN, '[PLUGIN][DOCKER]', 'Reusing ACTIVE container %s ' % old_container_id)
-                return {"id": self.container_id, "ip": self.container_ip}
+            self.container_id, self.container_ip = self.try_reuse_alive_container(old_container_id)
+            return {"id": self.container_id, "ip": self.container_ip}
         except Exception:
-            old_container_id = None
+            pass
 
         if self.reuse_container and old_container_id:
             self.container_id = old_container_id
             log.msg(log.LGREEN, '[PLUGIN][DOCKER]', 'Reusing container %s ' % self.container_id)
             self.connection.restart(self.container_id)
 
-        if self.container_id is None:
+        if not self.container_id:
             host_config = self.connection.create_host_config(pids_limit=self.pids_limit, mem_limit=self.mem_limit,
                                                              memswap_limit=self.memswap_limit, shm_size=self.shm_size,
                                                              cpu_period=self.cpu_period, cpu_shares=self.cpu_shares,
