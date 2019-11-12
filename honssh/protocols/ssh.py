@@ -202,10 +202,10 @@ class SSH(baseProtocol.BaseProtocol):
 
                 conn_details = {'dstIP': self.extract_string(), 'dstPort': self.extract_int(4),
                                 'srcIP': self.out.end_ip, 'srcPort': self.extract_int(4)}
-                self.out.port_forwarding_requested(conn_details)
 
                 if self.cfg.getboolean(['hp-restrict', 'disable_port_forwarding']):
                     log.msg(log.LPURPLE, '[SSH]', 'Detected Port Forwarding Channel - Disabling!')
+                    self.out.port_forwarding_requested(conn_details)
                     self.sendOn = False
                     self.send_back(parent, 92, self.int_to_hex(id) + self.int_to_hex(1) + self.string_to_hex(
                         'open failed') + self.int_to_hex(0))
