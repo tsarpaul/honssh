@@ -29,6 +29,7 @@
 # SUCH DAMAGE.
 
 import os
+import uuid
 
 from honssh import log
 from docker import Client
@@ -83,6 +84,9 @@ class DockerDriver(object):
 
     def launch_container(self):
         old_container_id = None
+        container_name = self.peer_ip
+        if not self.reuse_container:
+            container_name = container_name + "-" + str(uuid.uuid4())
         if self.reuse_container:
             try:
                 # Get container id
@@ -107,7 +111,7 @@ class DockerDriver(object):
                                                              cpuset_cpus=self.cpuset_cpus)
             self.container_id = \
                 self.connection.create_container(image=self.image, hostname=self.hostname,
-                                                 name=self.peer_ip, host_config=host_config)['Id']
+                                                 name=container_name, host_config=host_config)['Id']
             self.connection.start(self.container_id)
 
         exec_id = self.connection.exec_create(self.container_id, self.launch_cmd)['Id']
@@ -171,7 +175,8 @@ class DockerDriver(object):
 
         if storage_driver in supported_storage:
             # Get container mount id
-            mount_id = self._file_get_contents(('%s/image/%s/layerdb/mounts/%s/mount-id' % (docker_root, storage_driver, self.container_id)))
+            mount_id = self._file_get_contents(
+                ('%s/image/%s/layerdb/mounts/%s/mount-id' % (docker_root, storage_driver, self.container_id)))
             # construct mount path
             self.mount_dir = supported_storage[storage_driver] % (docker_root, storage_driver, mount_id)
 

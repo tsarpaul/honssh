@@ -89,7 +89,7 @@ class Plugin(object):
         cpu_period = self.cfg.getint(['honeypot-docker', 'cpu_period'])
         cpu_shares = self.cfg.getint(['honeypot-docker', 'cpu_shares'])
         cpuset_cpus = self.cfg.get(['honeypot-docker', 'cpuset_cpus'])
-        reuse_container = self.cfg.get(['honeypot-docker', 'reuse_container'])
+        reuse_container = self.cfg.getboolean(['honeypot-docker', 'reuse_container'])
 
         self.is_local_docker = uri.startswith('unix://') or uri.startswith('http+unix://')
 
