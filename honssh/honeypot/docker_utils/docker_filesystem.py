@@ -90,7 +90,7 @@ class DockerFileSystemEventHandler(FileSystemEventHandler):
                     os.makedirs('%s%s' % (self.overlay_folder, file.dirname().replace(self.mount_dir, '')))
                 except:
                     # Ignore exception
-                    pass
+                    raise
 
                 try:
                     # Do actual copy
